@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+</head>
+<body>
+    <form name="searchQuery" action="/recipesSearchResults" method="GET">
+        <h1>Search Recipes</h1>
+        <p>What type of recipe are you looking for?: </p>
+        <input type="checkbox" name="tag" value="european"> European
+        <input type="checkbox" name="tag" value="pasta"> Pasta
+        <input type="checkbox" name="tag" value="cookies"> Cookies
+        <input type="checkbox" name="tag" value="dessert"> Dessert
+        <input type="checkbox" name="tag" value="chicken"> Chicken
+        <br><br>
+        <p>Recipe's star rating:
+            <input type="radio" name="stars" value="1">1
+            <input type="radio" name="stars" value="2">2
+            <input type="radio" name="stars" value="3">3
+            <input type="radio" name="stars" value="4">4
+            <input type="radio" name="stars" value="5">5
+        <br><br>
+        <p>Search both recipe tags and stars? </p>
+        <input type="radio" name="searchType" value="both">Both
+        <input type="radio" name="searchType" value="stars">Stars Only
+        <input type="radio" name="searchType" value="tag">Recipe Type Only
+        <br><br><br>
+        <input type="reset" value="reset">
+        <input type="submit" value="submit">
+    </form>
+
+</body>
+
+</html>

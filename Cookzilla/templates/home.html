@@ -1,0 +1,49 @@
+<html>
+<head>
+</head>
+<body>
+
+<h1>Welcome {{username}}</h1>
+	<a href="/recipes_search">Search For A Recipe</a>
+<br><br>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+
+Here is your information:
+<br><br>
+<table>
+	<th>Your Profile</th>
+	<th>Your Groups</th>
+	<th>Recipes Posted</th>
+
+{% for line in posts %}
+	<tr>
+		<td>{{line.profile}}</td>
+		<td>{{line.gName}}</td>
+		<td>{{line.title}}</td>
+	</tr>
+{% endfor %}
+</table>
+<br>
+Things you can do:
+<br><br>
+<a href="/post_recipe">Post A Recipe</a>
+<br><br>
+<a href="/post_review">Review A Recipe</a>
+<br><br>
+<a href="/post_event">Post A Group Event</a>
+<br><br>
+<a href="/RSVP">RSVP to an Event</a>
+<br><br>
+<a href="/logout">Logout</a>
+
+</body>
+
+
+</html>
+
+
