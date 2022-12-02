@@ -17,3 +17,29 @@
 
 
 </html>
+
+
+
+<html>
+<head>
+</head>
+<body>
+<form action="/registerAuth" method="POST">
+	<input type="text" name = "username" placeholder="username" required/> Required</br>
+	<input type="password" name = "password" placeholder="password" required/> Required</br>
+	<input type="text" name="lname" placeholder="lastname"/> Optional</br>
+	<input type="text" name="fname" placeholder="firstname" /> Optional</br>
+	<input type="email" name="email" placeholder="email" /> Optional</br>
+	<input type="submit" value = Register />
+
+	{% if error %}
+		<p class="error"><strong>Error:</strong> {{error}}</p>
+	{% endif %}
+</form>
+
+<a href="/">Go back</a>
+
+</body>
+
+
+</html>

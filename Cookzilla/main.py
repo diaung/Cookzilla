@@ -110,6 +110,9 @@ def registerAuth():
     # grabs information from the forms
     username = request.form['username']
     password = request.form['password']
+    fname = request.form['fname']
+    lname = request.form['lname']
+    email = request.form['email']
 
     # SHA-256 password hashing
     hash_password = passwordHash(password)
@@ -125,14 +128,14 @@ def registerAuth():
     error = None
     if (data):
         # If the previous query returns data, then user exists
-        error = "This user already exists"
-        return render_template('register.html', error=error)
+        error = "This user already exists. Please login"
+        return render_template('login.html', error=error)
     else:
-        ins = 'INSERT INTO Person VALUES(%s, %s)'
-        cursor.execute(ins, (username, hash_password))
+        ins = 'INSERT INTO Person VALUES(%s, %s, %s, %s, %s)'
+        cursor.execute(ins, (username, hash_password, fname, lname, email))
         conn.commit()
         cursor.close()
-        return render_template('index.html')
+        return render_template('login.html')
 
 
 @app.route('/home')
