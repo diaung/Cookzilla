@@ -113,6 +113,7 @@ def registerAuth():
     fname = request.form['fname']
     lname = request.form['lname']
     email = request.form['email']
+    profile = request.form['profile']
 
     # SHA-256 password hashing
     hash_password = passwordHash(password)
@@ -131,8 +132,8 @@ def registerAuth():
         error = "This user already exists. Please login"
         return render_template('login.html', error=error)
     else:
-        ins = 'INSERT INTO Person VALUES(%s, %s, %s, %s, %s)'
-        cursor.execute(ins, (username, hash_password, fname, lname, email))
+        ins = 'INSERT INTO Person VALUES(%s, %s, %s, %s, %s, %s)'
+        cursor.execute(ins, (username, hash_password, fname, lname, email, profile))
         conn.commit()
         cursor.close()
         return render_template('login.html')
