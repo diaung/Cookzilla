@@ -1,0 +1,21 @@
+<html>
+<head>
+	What recipe would you like to search on?
+</head>
+<body>
+<br><br>
+
+<form action="/display_recipe_options" method="GET">
+	<input type="text" name = "searchTerm" placeholder="searchTerm" required/>
+	<input type="submit" value= Submit>
+
+	{% if error %}
+		<p class="error"><strong>Error:</strong> {{error}}</p>
+	{% endif %}
+
+	<br><br>
+	<a href="/">Home</a>
+	<br>
+</form>
+</body>
+</html>

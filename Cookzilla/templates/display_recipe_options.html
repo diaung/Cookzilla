@@ -1,0 +1,23 @@
+<html>
+<head>
+	Here are some recipes similar to your search...
+</head>
+<body>
+<br><br>
+
+<form action="/show_recipe_details" method="GET">
+
+	{% for line in recipes %}
+	<input type="radio" name="recipeID" value={{line.recipeID}}>{{line.recipeID, line.title}}</input>
+	<br>
+	{% endfor %}
+	<br>
+	<input type="submit" value="View Recipe">
+	<br><br><br>
+	<a href="/display_recipe">Select another recipe</a>
+	<br><br>
+	<a href="/">Home</a>
+	<br>
+</form>
+</body>
+</html>

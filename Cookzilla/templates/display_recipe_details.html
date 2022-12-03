@@ -1,0 +1,106 @@
+<html>
+<body>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+
+Here is some basic info for recipe ID {{recipeID}}:
+<br>
+<table>
+	<th>Recipe ID</th>
+	<th>Title</th>
+	<th>Number of Servings</th>
+	<th>Posted By</th>
+
+	{% for line in posts2 %}
+	<tr>
+		<td>{{line.recipeID}}</td>
+		<td>{{line.title}}</td>
+		<td>{{line.numServings}}</td>
+		<td>{{line.postedBy}}</td>
+	</tr>
+	{% endfor %}
+</table>
+<br><br>
+
+Here are the recipe ingredients:
+<table>
+	<th>Ingredient Name</th>
+	<th>Unit</th>
+	<th>Amount</th>
+
+	{% for line in posts3 %}
+	<tr>
+		<td>{{line.iName}}</td>
+		<td>{{line.unitName}}</td>
+		<td>{{line.amount}}</td>
+	</tr>
+	{% endfor %}
+</table>
+<br><br>
+
+Here are the recipe steps:
+<table>
+	<th>Step Number</th>
+	<th>Description</th>
+
+	{% for line in posts1 %}
+	<tr>
+		<td>{{line.stepNo}}</td>
+		<td>{{line.sDesc}}</td>
+	</tr>
+	{% endfor %}
+</table>
+<br><br>
+
+Here are the recipe reviews:
+<table>
+	<th>Username</th>
+	<th>Review Title</th>
+	<th>Review Description</th>
+	<th>Stars</th>
+
+	{% for line in posts4 %}
+	<tr>
+		<td>{{line.userName}}</td>
+		<td>{{line.revTitle}}</td>
+		<td>{{line.revDesc}}</td>
+		<td>{{line.stars}}</td>
+	</tr>
+	{% endfor %}
+</table>
+<br><br>
+
+Here are the related recipes:
+<table>
+	<th>Related Recipe</th>
+
+	{% for line in posts5 %}
+	<tr>
+		<td>{{line.recipe2}}</td>
+	</tr>
+	{% endfor %}
+</table>
+<br><br>
+
+Here are the recipe pictures:
+<table>
+	<th>URL</th>
+
+	{% for line in posts6 %}
+	<tr>
+		<td>{{line.pictureURL}}</td>
+	</tr>
+	{% endfor %}
+</table>
+<br><br><br>
+
+<a href="/display_recipe">Select another recipe</a>
+<br><br>
+<a href="/">Home</a>
+<br>
+</body>
+</html>
