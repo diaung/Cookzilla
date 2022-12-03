@@ -19,8 +19,8 @@ app = Flask(__name__)
 
 # Configure MySQL
 conn = pymysql.connect(host='localhost',
-                       port=3306,
-                       user='diana',
+                       port=8889, #port=3306,
+                       user='jessie', #user='diana',
                        password='cookzilla6083',
                        db='cookzilla',
                        charset='utf8mb4',
@@ -151,6 +151,7 @@ def home():
     cursor.close()
     return render_template('home.html', username=user, posts=data)
 
+
 #recipes search
 @app.route('/recipes_search')
 def recipesSearch():
@@ -180,74 +181,111 @@ def recipesSearchResults():
     return render_template('display_recipe.html', recipe=data)
 
 
-@app.route('/post', methods=['GET', 'POST'])
-def post():
+''' 
+REQUIRED CASE 2: search for recipe and display relevant info
+'''
+# initial search page
+@app.route('/display_recipe')
+def display_recipe():
+    return render_template('display_recipe.html')
+
+# display the recipe options based on user's search term
+@app.route('/display_recipe_options')
+def display_recipe_options():
+    searchTerm = request.args['searchTerm']
+    cursor = conn.cursor()
+    query = 'SELECT DISTINCT recipeID,title FROM Recipe WHERE (recipeID LIKE %s OR title LIKE %s) ORDER BY recipeID ASC'
+    args = ['%' + searchTerm + '%']
+    cursor.execute(query, (args, args))
+    data = cursor.fetchall()
+    cursor.close()
+    error = None
+    if not data:
+        error = "There are no recipes matching your search, try again."
+        return render_template('display_recipe.html', error=error)
+    else:
+        return render_template('display_recipe_options.html', recipes=data)
+
+# display relevant details of the recipe after selecting an option
+@app.route('/show_recipe_details', methods=["GET", "POST"])
+def show_recipe_details():
+    poster = request.args['recipeID']
+    cursor = conn.cursor()
+
+    query1 = 'SELECT stepNo,sDesc FROM Recipe NATURAL JOIN Step WHERE recipeID = %s ORDER BY stepNo ASC'
+    cursor.execute(query1, poster)
+    data1 = cursor.fetchall()
+
+    query2 = 'SELECT * FROM Recipe WHERE recipeID = %s'
+    cursor.execute(query2, poster)
+    data2 = cursor.fetchall()
+
+    query3 = 'SELECT * FROM RecipeIngredient WHERE recipeID = %s'
+    cursor.execute(query3, poster)
+    data3 = cursor.fetchall()
+
+    query4 = 'SELECT * FROM Review WHERE recipeID = %s'
+    cursor.execute(query4, poster)
+    data4 = cursor.fetchall()
+
+    query5 = 'SELECT recipe2 FROM RelatedRecipe WHERE recipe1 = %s'
+    cursor.execute(query5, poster)
+    data5 = cursor.fetchall()
+
+    query6 = 'SELECT pictureURL FROM RecipePicture WHERE recipeID = %s'
+    cursor.execute(query6, poster)
+    data6 = cursor.fetchall()
+    cursor.close()
+
+    return render_template('display_recipe_details.html', recipeID=poster, posts1=data1,
+                           posts2=data2, posts3=data3, posts4=data4, posts5=data5, posts6=data6)
+
+
+''' 
+REQUIRED CASE 4: post a recipe
+'''
+''' 
+# initial page to post in Recipe table
+@app.route('/post_recipe')
+def post_recipe():
+    return render_template('post_recipe.html')
+
+# make sure Recipe post is valid
+@app.route('/post_recipeAuth', methods=['GET', 'POST'])
+def post_recipeAuth():
+    # grabs information from the forms
     username = session['username']
-    cursor = conn.cursor();
-    blog = request.form['blog']
-    query = 'INSERT INTO blog (blog_post, username) VALUES(%s, %s)'
-    cursor.execute(query, (blog, username))
-    conn.commit()
-    cursor.close()
-    return redirect(url_for('home'))
-
-
-@app.route('/select_blogger')
-def select_blogger():
-    # check that user is logged in
-    # username = session['username']
-    # should throw exception if username not found
-
-    cursor = conn.cursor();
-    query = 'SELECT DISTINCT username FROM blog'
-    cursor.execute(query)
-    data = cursor.fetchall()
-    cursor.close()
-    return render_template('select_blogger.html', user_list=data)
-
-
-@app.route('/show_posts', methods=["GET", "POST"])
-def show_posts():
-    poster = request.args['poster']
-    cursor = conn.cursor();
-    query = 'SELECT ts, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
-    cursor.execute(query, poster)
-    data = cursor.fetchall()
-    cursor.close()
-    return render_template('show_posts.html', poster_name=poster, posts=data)
+    recipeID = request.form['recipeID']
+    title = request.form['title']
+    numServings = request.form['numServings']
+    cursor = conn.cursor() # cursor used to send queries
+    query = 'SELECT * FROM Recipe WHERE recipeID = %s' # executes query
+    cursor.execute(query, (recipeID))
+    data = cursor.fetchone()
+    error = None
+    if data:
+        error = "This recipe ID already exists, please try another one"
+        return render_template('post_recipe.html', error=error)
+    else:
+        ins = 'INSERT INTO Recipe (recipeID, title, numServings, postedBy) VALUES(%s, %s, %s, %s)'
+        cursor.execute(ins, (recipeID, title, numServings, username))
+        conn.commit()
+        cursor.close()
+        return render_template('home.html')
+# To Do:
+# add Steps
+# add RecipeIngredients
+# add RecipePicture (if any)
+# add RecipeTag (if any)
+# add RelatedRecipe (if any)
+# add Restrictions (if any)
+'''
 
 
 
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-@app.route('/')
-def upload_form():
-    return render_template('upload.html')
-
-
-@app.route('/', methods=['POST'])
-def upload_file():
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
-            flash('No file selected for uploading')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            flash('File successfully uploaded')
-            return redirect('/')
-        else:
-            flash('Allowed file types are txt, pdf, png, jpg, jpeg, gif')
-            return redirect(request.url)
-
 
 @app.route('/logout')
 def logout():
