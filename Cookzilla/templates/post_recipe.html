@@ -1,0 +1,17 @@
+<html>
+<head>
+Start posting your recipe!
+</head>
+<body>
+<form action="/post_recipeAuth" method="POST">
+	<input type="text" name="title" placeholder="title" required/> required</br>
+	<input type="text" name="numServings" placeholder="numServings" required/> required</br>
+	<input type="submit" value = Post />
+
+	{% if error %}
+	<p class="error"><strong>Error:</strong> {{error}}</p>
+	{% endif %}
+</form>
+<a href="/home">Home</a>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<html>
+<head>
+Add some basic info for recipe ID {{recipeID}}:
+</head>
+<body>
+
+
+<form action="/post_recipe_details" method="GET">
+	<input type="text" name = "tagText" placeholder="tagText"> tag </br>
+	<input type="text" name = "recipe2" placeholder="relatedRecipe"> related recipe ID </br>
+	<input type="text" name = "pictureURL" placeholder="pictureURL"> picture URL </br>
+
+	<p>Add ingredients: </p>
+	<input type="text" name = "recipeID" value={{recipeID}}> recipe ID </br>
+	<input type="text" name = "iName" placeholder="iName"> ingredient name </br>
+	<input type="text" name = "unitName" placeholder="unitName"> unit name </br>
+	<input type="text" name = "amount" placeholder="amount"> amount </br>
+
+	<p>Add Steps: </p>
+	<input type="number" name = "stepNo" value={{stepNo}} > step number </br>
+	<!-- <input type="text" name = "recipeID" value={{recipeID}} > recipe ID </br> -->
+	<input type="text" name = "sDesc" placeholder="sDesc"/> step description </br>
+
+		<p> Do you want to add more ingredients and/or steps?
+			<input type="radio" name="addMore" value="yes" checked = true >yes
+            <input type="radio" name="addMore" value="no">no
+        <br><br>
+
+	<input type="submit" value = Post />
+</form>
+<a href="/home">Home</a>
+</body>
+</html>
