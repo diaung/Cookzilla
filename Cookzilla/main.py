@@ -210,7 +210,6 @@ def recipesSearchResults():
     cursor.close()
     return render_template('display_recipe.html', recipe=data)
 
-
 ''' 
 REQUIRED CASE 2: search for recipe and display relevant info
 '''
@@ -270,11 +269,9 @@ def show_recipe_details():
     return render_template('display_recipe_details.html', recipeID=poster, posts1=data1,
                            posts2=data2, posts3=data3, posts4=data4, posts5=data5, posts6=data6)
 
-
 ''' 
 REQUIRED CASE 4: post a recipe
 '''
-''' 
 # initial page to post in Recipe table
 @app.route('/post_recipe')
 def post_recipe():
@@ -283,33 +280,63 @@ def post_recipe():
 # make sure Recipe post is valid
 @app.route('/post_recipeAuth', methods=['GET', 'POST'])
 def post_recipeAuth():
-    # grabs information from the forms
     username = session['username']
-    recipeID = request.form['recipeID']
     title = request.form['title']
     numServings = request.form['numServings']
     cursor = conn.cursor() # cursor used to send queries
-    query = 'SELECT * FROM Recipe WHERE recipeID = %s' # executes query
-    cursor.execute(query, (recipeID))
-    data = cursor.fetchone()
-    error = None
-    if data:
-        error = "This recipe ID already exists, please try another one"
-        return render_template('post_recipe.html', error=error)
-    else:
-        ins = 'INSERT INTO Recipe (recipeID, title, numServings, postedBy) VALUES(%s, %s, %s, %s)'
-        cursor.execute(ins, (recipeID, title, numServings, username))
+    ins = 'INSERT INTO Recipe (title, numServings, postedBy) VALUES(%s, %s, %s)'
+    cursor.execute(ins, (title, numServings, username))
+    recipeID = cursor.lastrowid
+    conn.commit()
+    cursor.close()
+    return render_template('post_recipe_more.html', recipeID=recipeID, stepNo=1)
+
+@app.route('/post_recipe_details', methods=['GET', 'POST'])
+def post_recipe_details():
+    rID = request.args['recipeID']
+    tagText = request.args['tagText']
+    related = request.args['recipe2']
+    pic = request.args['pictureURL']
+    iName = request.args['iName']
+    unitName= request.args['unitName']
+    amount = request.args['amount']
+    stepNo = request.args['stepNo']
+    sDesc = request.args['sDesc']
+
+    cursor = conn.cursor()
+
+    if tagText:
+        ins = 'INSERT INTO RecipeTag (recipeID, tagText) VALUES(%s,%s)'
+        cursor.execute(ins, (rID, tagText))
         conn.commit()
-        cursor.close()
-        return render_template('home.html')
-# To Do:
-# add Steps
-# add RecipeIngredients
-# add RecipePicture (if any)
-# add RecipeTag (if any)
-# add RelatedRecipe (if any)
-# add Restrictions (if any)
-'''
+    if related:
+        ins = 'INSERT INTO RelatedRecipe (recipe1, recipe2) VALUES(%s,%s)'
+        cursor.execute(ins, (rID, related))
+        ins = 'INSERT INTO RelatedRecipe (recipe1, recipe2) VALUES(%s,%s)'
+        cursor.execute(ins, (related, rID))
+        conn.commit()
+    if pic:
+        ins = 'INSERT INTO RecipePicture (recipeID, pictureURL) VALUES(%s,%s)'
+        cursor.execute(ins, (rID, pic))
+        conn.commit()
+    if (iName and unitName and amount):
+        ins = 'INSERT INTO RecipeIngredient (recipeID, iName, unitName, amount) VALUES(%s,%s,%s,%s)'
+        cursor.execute(ins, (rID, iName, unitName, amount))
+        conn.commit()
+    if (stepNo and sDesc):
+        ins = 'INSERT INTO Step (stepNo, recipeID, sDesc) VALUES(%s,%s,%s)'
+        cursor.execute(ins, (stepNo, rID, sDesc))
+        stepNo = int(stepNo) + 1
+        conn.commit()
+
+    cursor.close()
+
+    addMore = request.args['addMore']
+    if addMore == 'yes':
+        return render_template('post_recipe_more.html', recipeID=rID, stepNo=stepNo)
+
+    return render_template('home.html')
+
 '''OPTIONAL CASE 1:'''
 # 7 Post an event for a group user belongs to
 # check user's group and return GroupName and GroupCreator
