@@ -1,0 +1,69 @@
+<html>
+
+<head>
+</head>
+
+<body>
+	<h1>{{username}} Post an Event!</h1>
+
+	You can post an event only for the groups you are a member of.
+	<br>
+	Here are the groups you are a member of:
+	<br><br>
+
+	<style type="text/css">
+		table,
+		th,
+		td {
+			border: 1px solid black;
+		}
+	</style>
+
+<table>
+	<th>Group Name</th>
+	<th>Group Creator</th>
+	{% for line in groups %}
+	<tr>
+		<td>{{line.gName}}</td>
+		<td>{{line.gCreator}}</td>
+	</tr>
+	{% endfor %}
+</table>
+
+</body></br>
+<p>
+	Please use the form below to submit your event. <br>
+	<br>
+	You may include some pictures to your event if desired. The allowed file extensions for the picture are: png, jpeg, and gif
+	<br>
+	After clicking submit on the form below, you will be given an eventID as confirmation of your event.
+</p>
+
+<form method="POST" action="/post_event" enctype=multipart/form-data>
+	Event Name:</br>  <input type="text" name="eName" placeholder="Event Name" required /></br>
+	</br>
+	Event Description:</br><input type="text" name="eDesc" placeholder="Event Description" /> </br>
+	</br>
+	Date/Time:</br> <input type="datetime" name="eDate" placeholder="Event Date/Time" required /> format required: (YYYY-MM-DD HH:mm:ss)</br>
+	</br>
+	Group Name:</br><input type="text" name="gName" placeholder="Group Name" required /> </br>
+	</br>
+	Group Creator: </br><input type="text" name="gCreator" placeholder="Group Creator" required /> </br>
+	</br>
+	<input type="file" name="pictures[]" autocomplete="off" multiple=""> </br>
+	<input type="submit" value=Submit /> </br>
+</form>
+
+{% if error %}
+	<p class="error"><strong>Error:</strong> {{error}}</p>
+{% endif %}
+{% if message %}
+	<p class="message"><strong>Message:</strong> {{message}}</p>
+{% endif %}
+
+</br>
+
+<a href="/home">Home</a></br>
+<a href="/logout">Logout</a></br>
+
+</html>
