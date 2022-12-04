@@ -33,14 +33,16 @@ def allowed_image_filesize(filesize):
 app = Flask(__name__)
 # app.secret_key = "secret key"
 
+
 # Configure MySQL
 conn = pymysql.connect(host='localhost',
-                       port=3306, #port=8889,
-                       user='diana', #user='jessie',
+                       port=8889, #port=3306,
+                       user='jessie', #user='diana',
                        password='cookzilla6083',
                        db='cookzilla',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
+
 
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(),'uploads')
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -210,6 +212,7 @@ def recipesSearchResults():
     cursor.close()
     return render_template('display_recipe.html', recipe=data)
 
+
 ''' 
 REQUIRED CASE 2: search for recipe and display relevant info
 '''
@@ -268,6 +271,7 @@ def show_recipe_details():
 
     return render_template('display_recipe_details.html', recipeID=poster, posts1=data1,
                            posts2=data2, posts3=data3, posts4=data4, posts5=data5, posts6=data6)
+
 
 ''' 
 REQUIRED CASE 4: post a recipe
@@ -337,6 +341,68 @@ def post_recipe_details():
 
     return render_template('home.html')
 
+''' 
+OPTIONAL CASE 3: post a review
+'''
+@app.route('/post_review')
+def postPage():
+    # function only available if logged in - need to check if user is logged in
+    if session.get('username'):
+        user = session['username']
+    else:
+        return redirect(url_for('login'))
+    return render_template('post_review.html', username=user)
+
+@app.route('/post_review', methods=['GET', 'POST'])
+def postReview():
+    user = session['username']
+    if request.method == 'POST':
+        recipeID = request.form['recipeID']
+        revTitle = request.form['revTitle']
+        revDesc = request.form['revDesc']
+        stars = request.form['stars']
+        reviewPicture = request.files.getlist('pictures')
+
+        # check if the recipe ID is valid
+        cursor = conn.cursor()
+        query = 'SELECT * FROM Recipe WHERE recipeID = %s'
+        cursor.execute(query, (recipeID))
+        query = cursor.fetchall()
+        data = query
+
+        if data:
+            ins = 'INSERT INTO Review (userName, recipeID, revTitle, revDesc, stars) VALUES(%s, %s, %s, %s, %s)'
+            cursor.execute(ins, (user, recipeID, revTitle, revDesc, stars))
+
+            # if pictures, add pictures
+            for file in reviewPicture:
+                if request.method == 'POST':
+                    # check if the post request has the file part
+                    if 'file' not in request.files:
+                        flash('No file part')
+                    if file.filename == '':
+                        flash('No file selected for uploading')
+                    if file and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        file_url = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        file.save(file_url)
+                        flash('File successfully uploaded')
+                        query = 'INSERT INTO ReviewPicture (userName, recipeID, pictureURL) VALUES (%s, %s, %s)'
+                        cursor.execute(query, (user, recipeID, str(file_url)))
+                    else:
+                        flash('Allowed file types are png, jpg, jpeg, gif')
+
+            conn.commit()
+            cursor.close()
+            message = "Confirmation of your review post! Post another review, return home, or log out."
+            return render_template('post_review.html', username=user, message=message)
+        else:
+            error = 'You must post a valid recipe ID.'
+            conn.commit()
+            cursor.close()
+            return render_template('post_review.html', username=user, error=error)
+
+
 '''OPTIONAL CASE 1:'''
 # 7 Post an event for a group user belongs to
 # check user's group and return GroupName and GroupCreator
@@ -347,6 +413,7 @@ def getGroupMembership(user):
     data = cursor.fetchall()
     cursor.close
     return data
+
 @app.route('/post_event')
 def postEventPage():
     # function only available if logged in.
@@ -429,3 +496,17 @@ app.secret_key = 'some key that you will never guess'
 # for changes to go through, TURN OFF FOR PRODUCTION
 if __name__ == "__main__":
     app.run('127.0.0.1', 5001, debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
