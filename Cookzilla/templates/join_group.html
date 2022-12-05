@@ -1,0 +1,80 @@
+<html>
+
+<head>
+</head>
+
+<body>
+	You are logged in as {{username}}.
+	<h1>Join a Group!</h1>
+
+</body>
+<p>
+	Please use the form below to join groups. <br>
+	<br>
+</p>
+
+	Here are the groups you are in:
+
+	<style type="text/css">
+		table,
+		th,
+		td {
+			border: 1px solid black;
+		}
+	</style>
+
+	<table>
+	<th>Group Name</th>
+	<th>Group Creator</th>
+	{% for line in groups %}
+	<tr>
+		<td>{{line.gName}}</td>
+		<td>{{line.gCreator}}</td>
+	</tr>
+	{% endfor %}
+</table>
+<br>
+	Here are the groups that are available for you to join:
+	<br>
+	<table>
+	<th>Group Name</th>
+	<th>Group Description </th>
+		<th>Group Creator </th>
+	{% for line in notgroups %}
+	<tr>
+		<td>{{line.gName}}</td>
+		<td>{{line.gDesc}}</td>
+		<td>{{line.gCreator}}</td>
+	</tr>
+	{% endfor %}
+</table>
+
+<form method="POST" action="/join_group" enctype=multipart/form-data>
+	<br>
+	Enter desired group and click Submit to join, return home, or logout. <br>
+
+	<br>
+	Group Name:<input type="text" name="gName" placeholder="gName" required /></br>
+	Group Creator:<input type="text" name="gCreator" placeholder="gCreator" required /></br>
+	</br>
+
+	<br><br>
+	<input type="submit" value=Submit /> </br>
+</form>
+</br>
+
+
+{% if message %}
+	<p class="message"><strong>Message:</strong> {{message}}</p>
+{% endif %}
+
+
+{% if msg %}
+	<p class="msg"><strong>Message:</strong> {{msg}}</p>
+{% endif %}
+
+
+<a href="/home">Home</a></br>
+<a href="/logout">Logout</a></br>
+
+</html>
