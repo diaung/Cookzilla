@@ -402,6 +402,43 @@ def postReview():
             cursor.close()
             return render_template('post_review.html', username=user, error=error)
 
+''' 
+OPTIONAL CASE 4: join a group
+'''
+@app.route('/join_group', methods=['GET', 'POST'])
+def joinGroup():
+    user = session['username']
+
+    # user is not a member of these existing groups
+    def not_member():
+        cursor = conn.cursor()
+        not_in_grp_query = 'SELECT * FROM `Group` WHERE gName NOT IN (SELECT gName from GroupMembership WHERE memberName = %s)'
+        cursor.execute(not_in_grp_query,(user))
+        not_in_grp_query = cursor.fetchall()
+        conn.commit()
+        cursor.close()
+        return not_in_grp_query
+
+    # add user to groups they are not a member of
+    if request.method == 'POST':
+        gName = request.form['gName']
+        gCreator = request.form['gCreator']
+        cursor = conn.cursor()
+        ins = 'INSERT INTO GroupMembership (memberName,gName,gCreator) VALUES(%s, %s, %s)'
+        cursor.execute(ins, (user,gName,gCreator))
+        conn.commit()
+        cursor.close()
+        dataMember = getGroupMembership(user) # Diana's function
+        dataNotMember = not_member()
+        message = "Confirmation of your new group membership! Join another group (if available), return home, or logout"
+        return render_template('join_group.html', username=user, groups=dataMember, notgroups=dataNotMember, message=message)
+
+    else:
+        dataMem = getGroupMembership(user) # user is member of these groups
+        dataNotMem = not_member() # user is not a member of these groups
+
+    return render_template('join_group.html', username=user, groups=dataMem, notgroups=dataNotMem)
+
 
 '''OPTIONAL CASE 1:'''
 # 7 Post an event for a group user belongs to
@@ -496,17 +533,3 @@ app.secret_key = 'some key that you will never guess'
 # for changes to go through, TURN OFF FOR PRODUCTION
 if __name__ == "__main__":
     app.run('127.0.0.1', 5001, debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
