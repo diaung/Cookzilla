@@ -166,7 +166,7 @@ def registerAuth():
         cursor.execute(ins, (username, hash_password, fname, lname, email, profile))
         conn.commit()
         cursor.close()
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
 
 @app.route('/home')
 def home():
@@ -194,23 +194,26 @@ def recipesSearchResults():
     cursor = conn.cursor();
     if searchType == 'tag':
         # query recipes with chosen tag value
-        query = 'SELECT recipeID, title FROM Recipe NATURAL JOIN RecipeTag WHERE tagText = %(tag)s'
-        cursor.execute(query)
+        query = 'SELECT recipeID, title FROM Recipe NATURAL JOIN RecipeTag WHERE tagText = %s'
+        cursor.execute(query, tag)
         data = cursor.fetchall()
     elif searchType == 'stars':
         # query recipes with chosen star rating
-        query = 'SELECT recipeID, title FROM Recipe NATURAL JOIN Review WHERE stars = %(stars)s'
-        cursor.execute(query)
+        query = 'SELECT recipeID, title FROM Recipe NATURAL JOIN Review WHERE stars = %s'
+        cursor.execute(query, stars)
         data = cursor.fetchall()
     else:
         # query both recipe tag & num stars
-        query = 'SELECT recipeID, title FROM Recipe NATURAL JOIN RecipeTag NATURAL JOIN Review' \
-                'WHERE tagText = %(tag)s AND stars = %(stars)s'
-        cursor.execute(query)
+        query = 'SELECT recipeID, title FROM Recipe NATURAL JOIN RecipeTag NATURAL JOIN Review WHERE tagText = %s AND stars = %s'
+        cursor.execute(query,(tag, stars))
         data = cursor.fetchall()
-
     cursor.close()
-    return render_template('display_recipe.html', recipe=data)
+    error = None
+    if not data:
+        error = "There are no recipes matching your search, try again."
+        return render_template('recipes_search.html', error=error)
+    else:
+        return render_template('display_recipe_options.html', recipes=data)
 
 
 ''' 
