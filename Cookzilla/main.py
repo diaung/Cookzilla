@@ -36,8 +36,8 @@ app = Flask(__name__)
 
 # Configure MySQL
 conn = pymysql.connect(host='localhost',
-                       port=8889, #port=3306,
-                       user='jessie', #user='diana',
+                       port=3306, #port=8889,
+                       user='diana', #user='jessie',
                        password='cookzilla6083',
                        db='cookzilla',
                        charset='utf8mb4',
@@ -466,8 +466,7 @@ def postEventPage():
 @app.route('/post_event', methods=['GET', 'POST'])
 def postEvent():
     user = session['username']
-    finalPath = []
-    # check if pictures
+
     if request.method == 'POST':
         # get information
         eName = request.form['eName']
@@ -520,6 +519,74 @@ def postEvent():
             conn.commit()
             cursor.close()
             return redirect(url_for('post_event'), error=error)
+'''
+OPTIONAL CASE 2: RSVP to an Event
+'''
+@app.route('/show_events')
+def show_eventsPage():
+    # function only available if logged in.
+    # need to check if user is logged in
+    user = None
+    if session.get('username'):
+        user = session['username']
+    else:
+        return redirect(url_for('login'))
+    groups = getGroupMembership(user)
+    return render_template('show_events.html', username=user, groups=groups)
+
+@app.route('/post/<int:post_id>')
+def show_post(post_id):
+    # show the post with the given id, the id is an integer
+    return f'Post {post_id}'
+
+@app.route('/all_events', methods=['GET'])
+def show_all_events():
+    cursor = conn.cursor()
+    query = 'SELECT * FROM Event'
+    cursor.execute(query)
+    data = cursor.fetchall()
+    cursor.close()
+    return render_template('show_all_events.html', events=data)
+
+@app.route('/show_events/<int:event_id>', methods = ['GET', 'POST'])
+def show_events(event_id):
+    user = session['username']
+
+    # show events if user is member of group
+    error = None
+    this_event = None
+    cursor = conn.cursor()
+    query = 'SELECT * FROM Event WHERE eID = %s'
+    cursor.execute(query, (str(event_id)))
+    data = cursor.fetchall()
+    cursor.close()
+    if data:
+        this_event = data[0]
+        groupname = this_event.get('gName')
+        groupcreator = this_event.get('gCreator')
+        cursor = conn.cursor()
+        query = 'SELECT * FROM GroupMembership WHERE memberName = %s AND gName = %s AND gCreator = %s'
+        cursor.execute(query, (user,groupname,groupcreator))
+        group_data = cursor.fetchall()
+        cursor.close()
+
+    if request.method == 'POST':
+        cursor = conn.cursor()
+        rsvp = request.form['rsvp']
+        ins = 'INSERT INTO RSVP (userName, eID, response) VALUES(%s, %s, %s)'
+        cursor.execute(ins, (user, event_id, rsvp))
+        conn.commit()
+        cursor.close()
+        message = 'Congratulations! You successfully RSVP to event number ' + str(event_id)
+        return render_template('show_events.html',event_id=event_id, message=message)
+    else:
+        #if not submitting form show events
+        if group_data:
+            return render_template('show_events.html', events=data)
+        else:
+            error = 'You are not a member of this group. Please join the group to particpate in this event'
+            return redirect(url_for('joinGroup'))
+
 
 @app.route('/logout')
 def logout():

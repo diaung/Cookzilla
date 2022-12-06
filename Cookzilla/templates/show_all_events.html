@@ -1,0 +1,40 @@
+<html>
+<head>
+</head>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+
+<h2>Events</h2>
+
+<br><br>
+<table>
+	<th>eID</th>
+	<th>eName</th>
+    <th>eDesc</th>
+    <th>eDate</th>
+    <th>gName</th>
+    <th>gCreator</th>
+    <td>RSVP</td>
+
+{% for line in events %}
+	<tr>
+		<td>{{line.eID}}</td>
+		<td>{{line.eName}}</td>
+        <td>{{line.eDesc}}</td>
+        <td>{{line.eDate}}</td>
+        <td>{{line.gName}}</td>
+        <td>{{line.gCreator}}</td>
+        <td><a href="/show_events/{{line.eID}}">RSVP</a></td>
+	</tr>
+{% endfor %}
+</table>
+<br>
+
+<a href="/home">Home</a></br>
+<a href="/logout">Logout</a></br>
+
+</html>
