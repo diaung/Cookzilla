@@ -543,11 +543,6 @@ def show_eventsPage():
     groups = getGroupMembership(user)
     return render_template('show_events.html', username=user, groups=groups)
 
-@app.route('/post/<int:post_id>')
-def show_post(post_id):
-    # show the post with the given id, the id is an integer
-    return f'Post {post_id}'
-
 @app.route('/all_events', methods=['GET'])
 def show_all_events():
     cursor = conn.cursor()
