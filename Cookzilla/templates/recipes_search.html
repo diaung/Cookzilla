@@ -2,25 +2,25 @@
 <html>
 
 <head>
-
+<h1>Search Recipes</h1>
 </head>
 <body>
-    <form name="searchQuery" action="/display_recipe_options" method="GET">
-        <h1>Search Recipes</h1>
+    <form name="searchQueries" action="/display_recipe_options" method="GET">
         <p>What type of recipe are you looking for?: </p>
-        <input type="checkbox" name="tag" value="european"> European
-        <input type="checkbox" name="tag" value="pasta"> Pasta
-        <input type="checkbox" name="tag" value="cookies"> Cookies
-        <input type="checkbox" name="tag" value="dessert"> Dessert
-        <input type="checkbox" name="tag" value="chicken"> Chicken
-        <br><br>
+        {% for line in tags %}
+            <input type="checkbox" name="tag" value={{line.tagText}}>{{line.tagText}}
+	        <br>
+        {% endfor %}
+
         <p>Recipe's star rating:
             <input type="radio" name="stars" value="1">1
             <input type="radio" name="stars" value="2">2
             <input type="radio" name="stars" value="3">3
             <input type="radio" name="stars" value="4">4
             <input type="radio" name="stars" value="5">5
-        <br><br>
+
+            <br><br>
+
         <p>Search both recipe tags and stars? </p>
         <input type="radio" name="searchType" value="both">Both
         <input type="radio" name="searchType" value="stars">Stars Only
@@ -33,6 +33,9 @@
 		<p class="error"><strong>Error:</strong> {{error}}</p>
 	{% endif %}
     </form>
+</br>
+<a href="/">Back to Welcome Page</a></br>
+<a href="/login">Login</a></br>
 
 </body>
 

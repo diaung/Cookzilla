@@ -184,7 +184,13 @@ def home():
 #recipes search
 @app.route('/recipes_search')
 def recipesSearch():
-    return render_template('recipes_search.html')
+    #search only the tags available in database
+    cursor = conn.cursor()
+    tag_query = 'SELECT DISTINCT tagText FROM RecipeTag'
+    cursor.execute(tag_query)
+    data = cursor.fetchall()
+    cursor.close()
+    return render_template('recipes_search.html', tags=data)
 
 @app.route('/recipes_search', methods=["GET"])
 def recipesSearchResults():
@@ -193,7 +199,7 @@ def recipesSearchResults():
     searchType = request.args['searchType']
     cursor = conn.cursor();
     if searchType == 'tag':
-        # query recipes with chosen tag value
+        # query recipes with chosen tag value available from database
         query = 'SELECT recipeID, title FROM Recipe NATURAL JOIN RecipeTag WHERE tagText = %s'
         cursor.execute(query, tag)
         data = cursor.fetchall()
