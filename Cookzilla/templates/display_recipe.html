@@ -1,12 +1,13 @@
 <html>
 <head>
-	What recipe would you like to search on?
+	<h1>Search for Recipes to Display</h1>
+	What recipe would you like to search on?  Enter some text to get matches in recipe ID or recipe title.
 </head>
+
 <body>
 <br><br>
-
 <form action="/display_recipe_options" method="GET">
-	<input type="text" name = "searchTerm" placeholder="searchTerm" required/>
+	<input type="text" name = "searchTerm" placeholder="search on on some text" required/>
 	<input type="submit" value= Submit>
 
 	{% if error %}
@@ -17,5 +18,6 @@
 	<a href="/">Home</a>
 	<br>
 </form>
+
 </body>
 </html>

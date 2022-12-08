@@ -1,5 +1,6 @@
 <html>
 <body>
+<h2>Details for Recipe ID {{recipeID}}</h2>
 
 <style type="text/css">
 	table, th, td{
@@ -7,8 +8,7 @@
 	}
 </style>
 
-Here is some basic info for recipe ID {{recipeID}}:
-<br>
+Here is some basic info for the recipe:
 <table>
 	<th>Recipe ID</th>
 	<th>Title</th>
@@ -26,7 +26,8 @@ Here is some basic info for recipe ID {{recipeID}}:
 </table>
 <br><br>
 
-Here are the recipe ingredients:
+
+Recipe ingredients:
 <table>
 	<th>Ingredient Name</th>
 	<th>Unit</th>
@@ -42,7 +43,8 @@ Here are the recipe ingredients:
 </table>
 <br><br>
 
-Here are the recipe steps:
+
+Recipe steps:
 <table>
 	<th>Step Number</th>
 	<th>Description</th>
@@ -56,7 +58,7 @@ Here are the recipe steps:
 </table>
 <br><br>
 
-Here are the recipe reviews:
+Recipe reviews:
 <table>
 	<th>Username</th>
 	<th>Review Title</th>
@@ -74,32 +76,27 @@ Here are the recipe reviews:
 </table>
 <br><br>
 
-Here are the related recipes:
+Here are any related recipes:
 <table>
 	<th>Related Recipe</th>
-
 	{% for line in posts5 %}
 	<tr>
-		<td>{{line.recipe2}}</td>
+		<td><a href="/show_recipe_details?recipeID={{line.recipe1}}">{{line.recipe1}}</a> </td>
 	</tr>
 	{% endfor %}
 </table>
 <br><br>
 
 Here are the recipe pictures:
-<table>
-	<th>URL</th>
-
-	{% for line in posts6 %}
-	<tr>
-		<td>{{line.pictureURL}}</td>
-	</tr>
-	{% endfor %}
-</table>
+<br>
+{% for line in posts6 %}
+<img src= "{{line.pictureURL}}" alt="user image">
+<br>
+{% endfor %}
 <br><br><br>
 
 <a href="/display_recipe">Select another recipe</a>
-<br><br>
+<br>
 <a href="/">Home</a>
 <br>
 </body>
