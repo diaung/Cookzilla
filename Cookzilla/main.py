@@ -192,11 +192,16 @@ def recipesSearch():
     cursor.close()
     return render_template('recipes_search.html', tags=data)
 
-@app.route('/recipes_search', methods=["GET"])
-def recipesSearchResults():
+''' 
+REQUIRED CASE 2: search for recipe and display relevant info
+'''
+# display the recipe options based on user's search term
+@app.route('/display_recipe_options', methods=["GET"])
+def display_recipe_options():
     tag = request.args['tag']
     stars = request.args['stars']
     searchType = request.args['searchType']
+    print(searchType)
     cursor = conn.cursor();
     if searchType == 'tag':
         # query recipes with chosen tag value available from database
@@ -205,7 +210,7 @@ def recipesSearchResults():
         data = cursor.fetchall()
     elif searchType == 'stars':
         # query recipes with chosen star rating
-        query = 'SELECT recipeID, title FROM Recipe NATURAL JOIN Review WHERE stars = %s'
+        query = 'SELECT DISTINCT recipeID, title FROM Recipe NATURAL JOIN Review WHERE stars = %s'
         cursor.execute(query, stars)
         data = cursor.fetchall()
     else:
@@ -218,32 +223,6 @@ def recipesSearchResults():
     if not data:
         error = "There are no recipes matching your search, try again."
         return render_template('recipes_search.html', error=error)
-    else:
-        return render_template('display_recipe_options.html', recipes=data)
-
-
-''' 
-REQUIRED CASE 2: search for recipe and display relevant info
-'''
-# initial search page
-@app.route('/display_recipe')
-def display_recipe():
-    return render_template('display_recipe.html')
-
-# display the recipe options based on user's search term
-@app.route('/display_recipe_options')
-def display_recipe_options():
-    searchTerm = request.args['searchTerm']
-    cursor = conn.cursor()
-    query = 'SELECT DISTINCT recipeID,title FROM Recipe WHERE (recipeID LIKE %s OR title LIKE %s) ORDER BY recipeID ASC'
-    args = ['%' + searchTerm + '%']
-    cursor.execute(query, (args, args))
-    data = cursor.fetchall()
-    cursor.close()
-    error = None
-    if not data:
-        error = "There are no recipes matching your search, try again."
-        return render_template('display_recipe.html', error=error)
     else:
         return render_template('display_recipe_options.html', recipes=data)
 
@@ -280,7 +259,6 @@ def show_recipe_details():
 
     return render_template('display_recipe_details.html', recipeID=poster, posts1=data1,
                            posts2=data2, posts3=data3, posts4=data4, posts5=data5, posts6=data6)
-
 
 ''' 
 REQUIRED CASE 4: post a recipe

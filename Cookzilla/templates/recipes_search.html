@@ -8,7 +8,7 @@
     <form name="searchQueries" action="/display_recipe_options" method="GET">
         <p>What type of recipe are you looking for?: </p>
         {% for line in tags %}
-            <input type="checkbox" name="tag" value={{line.tagText}}>{{line.tagText}}
+            <input type="radio" name="tag" value={{line.tagText}}>{{line.tagText}}
 	        <br>
         {% endfor %}
 
