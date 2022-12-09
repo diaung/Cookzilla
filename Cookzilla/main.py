@@ -36,15 +36,15 @@ app = Flask(__name__)
 
 # Configure MySQL
 conn = pymysql.connect(host='localhost',
-                       port=3306, #port=8889,
-                       user='diana', #user='jessie',
+                       port=8889, #port=3306,
+                       user='jessie', #user='diana',
                        password='cookzilla6083',
                        db='cookzilla',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
-
-app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(),'uploads')
+#app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(),'static/uploads')
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
@@ -166,13 +166,13 @@ def registerAuth():
         cursor.execute(ins, (username, hash_password, fname, lname, email, profile))
         conn.commit()
         cursor.close()
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
 
 @app.route('/home')
 def home():
     user = session['username']
     cursor = conn.cursor();
-    query = 'SELECT DISTINCT profile, gName, title ' \
+    query = 'SELECT DISTINCT profile, gName, title, recipeID ' \
             'FROM Person NATURAL JOIN GroupMembership NATURAL JOIN Recipe ' \
             ' WHERE username = %s AND memberName = %s AND postedBy = %s'
     cursor.execute(query, (user, user, user))
@@ -248,8 +248,10 @@ def show_recipe_details():
     cursor.execute(query4, poster)
     data4 = cursor.fetchall()
 
-    query5 = 'SELECT recipe2 FROM RelatedRecipe WHERE recipe1 = %s'
-    cursor.execute(query5, poster)
+    #query5 = 'SELECT recipe2 FROM RelatedRecipe WHERE recipe1 = %s'
+    query5 = 'SELECT recipe1 FROM RelatedRecipe WHERE recipe2 = %s UNION ' \
+             'SELECT recipe2 FROM RelatedRecipe WHERE recipe1 = %s'
+    cursor.execute(query5, (poster,poster))
     data5 = cursor.fetchall()
 
     query6 = 'SELECT pictureURL FROM RecipePicture WHERE recipeID = %s'
@@ -263,70 +265,131 @@ def show_recipe_details():
 ''' 
 REQUIRED CASE 4: post a recipe
 '''
-# initial page to post in Recipe table
 @app.route('/post_recipe')
-def post_recipe():
-    return render_template('post_recipe.html')
+def postRecipePage():
+    # function only available if logged in.
+    # need to check if user is logged in
+    user = None
+    if session.get('username'):
+        user = session['username']
+    else:
+        return redirect(url_for('login'))
+    return render_template('post_recipe.html', username=user)
 
-# make sure Recipe post is valid
-@app.route('/post_recipeAuth', methods=['GET', 'POST'])
-def post_recipeAuth():
-    username = session['username']
-    title = request.form['title']
-    numServings = request.form['numServings']
-    cursor = conn.cursor() # cursor used to send queries
-    ins = 'INSERT INTO Recipe (title, numServings, postedBy) VALUES(%s, %s, %s)'
-    cursor.execute(ins, (title, numServings, username))
-    recipeID = cursor.lastrowid
-    conn.commit()
-    cursor.close()
-    return render_template('post_recipe_more.html', recipeID=recipeID, stepNo=1)
+@app.route('/post_recipe', methods=['GET', 'POST'])
+def postRecipe():
+    user = session['username']
 
-@app.route('/post_recipe_details', methods=['GET', 'POST'])
-def post_recipe_details():
-    rID = request.args['recipeID']
-    tagText = request.args['tagText']
-    related = request.args['recipe2']
-    pic = request.args['pictureURL']
-    iName = request.args['iName']
-    unitName= request.args['unitName']
-    amount = request.args['amount']
-    stepNo = request.args['stepNo']
-    sDesc = request.args['sDesc']
+    if request.method == 'POST':
+        # get information
+        tags = request.form['tags']
+        related = request.form['related']
+        ing = request.form['ingredients']
+        steps = request.form['steps']
 
-    cursor = conn.cursor()
+        title = request.form['title']
+        numServings = request.form['numServings']
 
-    if tagText:
-        ins = 'INSERT INTO RecipeTag (recipeID, tagText) VALUES(%s,%s)'
-        cursor.execute(ins, (rID, tagText))
+        eventPicture = request.files.getlist('pictures[]')
+
+        cursor = conn.cursor()
+        ins = 'INSERT INTO Recipe (title, numServings, postedBy) VALUES(%s, %s, %s)'
+        cursor.execute(ins, (title, numServings, user))
+        recipeID = cursor.lastrowid
+
+        # if pictures, add pictures
+        for file in eventPicture:
+            if request.method == 'POST':
+                # check if the post request has the file part
+                if 'file' not in request.files:
+                    flash('No file part')
+                if file.filename == '':
+                    flash('No file selected for uploading')
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file_url = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(file_url)
+                    flash('File successfully uploaded')
+                    query = 'INSERT INTO RecipePicture (recipeID, pictureURL) VALUES (%s, %s)'
+                    cursor.execute(query, (recipeID, str(file_url)))
+                else:
+                    flash('Allowed file types are png, jpg, jpeg, gif')
+
+
+        ins = 'SELECT Distinct iName FROM RecipeIngredient'
+        cursor.execute(ins)
+        data = cursor.fetchall()
+
+        ins = 'SELECT DISTINCT unitName FROM RecipeIngredient'
+        cursor.execute(ins)
+        data1 = cursor.fetchall()
+
         conn.commit()
-    if related:
-        ins = 'INSERT INTO RelatedRecipe (recipe1, recipe2) VALUES(%s,%s)'
-        cursor.execute(ins, (rID, related))
-        ins = 'INSERT INTO RelatedRecipe (recipe1, recipe2) VALUES(%s,%s)'
-        cursor.execute(ins, (related, rID))
-        conn.commit()
-    if pic:
-        ins = 'INSERT INTO RecipePicture (recipeID, pictureURL) VALUES(%s,%s)'
-        cursor.execute(ins, (rID, pic))
-        conn.commit()
-    if (iName and unitName and amount):
-        ins = 'INSERT INTO RecipeIngredient (recipeID, iName, unitName, amount) VALUES(%s,%s,%s,%s)'
-        cursor.execute(ins, (rID, iName, unitName, amount))
-        conn.commit()
-    if (stepNo and sDesc):
-        ins = 'INSERT INTO Step (stepNo, recipeID, sDesc) VALUES(%s,%s,%s)'
-        cursor.execute(ins, (stepNo, rID, sDesc))
-        stepNo = int(stepNo) + 1
-        conn.commit()
+        cursor.close()
 
-    cursor.close()
+        tagList = []
+        for i in range(int(tags)):
+            tagList.append(i)
 
-    addMore = request.args['addMore']
-    if addMore == 'yes':
-        return render_template('post_recipe_more.html', recipeID=rID, stepNo=stepNo)
+        relatedList = []
+        for i in range(int(related)):
+            relatedList.append(i)
 
-    return render_template('home.html')
+        ingList = []
+        for i in range(int(ing)):
+            ingList.append(i)
+
+        stepsList = []
+        for i in range(1, int(steps) + 1):
+            stepsList.append(i)
+
+        return render_template('post_recipe_more.html', username=user, tags=tagList, related=relatedList,
+                               ing=ingList, steps=stepsList,recipeID=recipeID, data=data, data1=data1)
+
+
+@app.route('/post_recipe_more', methods=['GET', 'POST'])
+def postRecipeMore():
+    user = session['username']
+
+    if request.method == 'POST':
+        tags = request.form.getlist('tag')
+        related = request.form.getlist('related')
+        iName = request.form.getlist('ingName')
+        unitName = request.form.getlist('unitName')
+        amount = request.form.getlist('amount')
+        steps = request.form.getlist('steps')
+
+        cursor = conn.cursor()
+
+        for i in tags:
+            ins = 'INSERT INTO RecipeTag (recipeID, tagText) VALUES(%s,%s)'
+            rID = request.form['recipeID']
+            cursor.execute(ins, (rID, i))
+        for i in related:
+            ins = 'INSERT INTO RelatedRecipe (recipe1, recipe2) VALUES(%s,%s)'
+            rID = request.form['recipeID1']
+            cursor.execute(ins, (rID, i))
+            cursor.execute(ins, (i, rID))
+
+        j = 0
+        for i in iName:
+            print(i + " " + unitName[j] + " " + amount[j])
+            ins = 'INSERT INTO RecipeIngredient (recipeID, iName, unitName, amount) VALUES(%s,%s,%s,%s)'
+            rID = request.form['recipeID2']
+            cursor.execute(ins, (rID, i, unitName[j], amount[j]))
+            j = j + 1
+
+        j = 1
+        for i in steps:
+            ins = 'INSERT INTO Step (stepNo, recipeID, sDesc) VALUES(%s,%s,%s)'
+            rID = request.form['recipeID3']
+            cursor.execute(ins, (j, rID, i))
+            j = j + 1
+
+        cursor.close()
+
+        message = "You've successfully posted recipe ID " + str(rID)
+        return render_template('post_recipe.html', username=user, message=message)
 
 ''' 
 OPTIONAL CASE 3: post a review
@@ -343,48 +406,53 @@ def postPage():
 @app.route('/post_review', methods=['GET', 'POST'])
 def postReview():
     user = session['username']
+
     if request.method == 'POST':
         recipeID = request.form['recipeID']
         revTitle = request.form['revTitle']
         revDesc = request.form['revDesc']
         stars = request.form['stars']
-        reviewPicture = request.files.getlist('pictures')
+        eventPicture = request.files.getlist('pictures[]')
 
         # check if the recipe ID is valid
         cursor = conn.cursor()
         query = 'SELECT * FROM Recipe WHERE recipeID = %s'
         cursor.execute(query, (recipeID))
-        query = cursor.fetchall()
-        data = query
+        validRID = cursor.fetchall()
+        if not validRID:
+            error = 'You must post a valid recipe ID - it appears that recipe does not exist.'
 
-        if data:
+        # check if the recipe ID is already reviewed
+        query = 'SELECT * FROM Review WHERE recipeID = %s and userName = %s'
+        cursor.execute(query, (recipeID, user))
+        reviewed = cursor.fetchall()
+        if reviewed:
+            error = 'You already reviewed this recipe.'
+
+        if validRID and not reviewed:
             ins = 'INSERT INTO Review (userName, recipeID, revTitle, revDesc, stars) VALUES(%s, %s, %s, %s, %s)'
             cursor.execute(ins, (user, recipeID, revTitle, revDesc, stars))
-
             # if pictures, add pictures
-            for file in reviewPicture:
-                if request.method == 'POST':
-                    # check if the post request has the file part
-                    if 'file' not in request.files:
-                        flash('No file part')
-                    if file.filename == '':
-                        flash('No file selected for uploading')
-                    if file and allowed_file(file.filename):
-                        filename = secure_filename(file.filename)
-                        file_url = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                        file.save(file_url)
-                        flash('File successfully uploaded')
-                        query = 'INSERT INTO ReviewPicture (userName, recipeID, pictureURL) VALUES (%s, %s, %s)'
-                        cursor.execute(query, (user, recipeID, str(file_url)))
-                    else:
-                        flash('Allowed file types are png, jpg, jpeg, gif')
-
+            for file in eventPicture:
+                # check if the post request has the file part
+                if 'file' not in request.files:
+                    flash('No file part')
+                if file.filename == '':
+                    flash('No file selected for uploading')
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file_url = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(file_url)
+                    flash('File successfully uploaded')
+                    query = 'INSERT INTO ReviewPicture (userName, recipeID, pictureURL) VALUES (%s, %s, %s)'
+                    cursor.execute(query, (user, recipeID, str(file_url)))
+                else:
+                    flash('Allowed file types are png, jpg, jpeg, gif')
             conn.commit()
             cursor.close()
             message = "Confirmation of your review post! Post another review, return home, or log out."
             return render_template('post_review.html', username=user, message=message)
         else:
-            error = 'You must post a valid recipe ID.'
             conn.commit()
             cursor.close()
             return render_template('post_review.html', username=user, error=error)
@@ -411,18 +479,31 @@ def joinGroup():
         gName = request.form['gName']
         gCreator = request.form['gCreator']
         cursor = conn.cursor()
-        ins = 'INSERT INTO GroupMembership (memberName,gName,gCreator) VALUES(%s, %s, %s)'
-        cursor.execute(ins, (user,gName,gCreator))
-        conn.commit()
-        cursor.close()
-        dataMember = getGroupMembership(user) # Diana's function
-        dataNotMember = not_member()
-        message = "Confirmation of your new group membership! Join another group (if available), return home, or logout"
-        return render_template('join_group.html', username=user, groups=dataMember, notgroups=dataNotMember, message=message)
 
+        # do an error check here (valid gName and gCreator combo)
+        query = 'SELECT gName,gCreator FROM `Group` WHERE (gName = %s AND gCreator = %s)'
+        cursor.execute(query, (gName, gCreator))
+        validGroup = cursor.fetchall()
+        conn.commit()
+
+        if validGroup:
+            ins = 'INSERT INTO GroupMembership (memberName,gName,gCreator) VALUES(%s, %s, %s)'
+            cursor.execute(ins, (user,gName,gCreator))
+            conn.commit()
+            cursor.close()
+            dataMember = getGroupMembership(user) # Diana's function
+            dataNotMember = not_member()
+            message = "Confirmation of your new group membership! Join another group (if available), return home, or logout"
+            return render_template('join_group.html', username=user, groups=dataMember, notgroups=dataNotMember, message=message)
+
+        else:
+            dataMem = getGroupMembership(user) # user is member of these groups
+            dataNotMem = not_member() # user is not a member of these groups
+            message = "Invalid group name/group creator combination, please try again"
+            return render_template('join_group.html', username=user, groups=dataMem, notgroups=dataNotMem, message=message)
     else:
-        dataMem = getGroupMembership(user) # user is member of these groups
-        dataNotMem = not_member() # user is not a member of these groups
+        dataMem = getGroupMembership(user)  # user is member of these groups
+        dataNotMem = not_member()  # user is not a member of these groups
 
     return render_template('join_group.html', username=user, groups=dataMem, notgroups=dataNotMem)
 
@@ -506,6 +587,8 @@ def postEvent():
             conn.commit()
             cursor.close()
             return redirect(url_for('post_event'), error=error)
+
+
 '''
 OPTIONAL CASE 2: RSVP to an Event
 '''
@@ -520,6 +603,11 @@ def show_eventsPage():
         return redirect(url_for('login'))
     groups = getGroupMembership(user)
     return render_template('show_events.html', username=user, groups=groups)
+
+@app.route('/post/<int:post_id>')
+def show_post(post_id):
+    # show the post with the given id, the id is an integer
+    return f'Post {post_id}'
 
 @app.route('/all_events', methods=['GET'])
 def show_all_events():
@@ -568,7 +656,6 @@ def show_events(event_id):
         else:
             error = 'You are not a member of this group. Please join the group to particpate in this event'
             return redirect(url_for('joinGroup'))
-
 
 @app.route('/logout')
 def logout():
