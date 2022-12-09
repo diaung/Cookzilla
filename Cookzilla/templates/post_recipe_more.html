@@ -1,32 +1,62 @@
 <html>
 <head>
-Add some basic info for recipe ID {{recipeID}}:
+Add the details of your recipe for recipeID {{recipeID}}
 </head>
 <body>
 
+<form action="/post_recipe_more" method="POST" enctype=multipart/form-data>
+	<p>Add tags: </p>
+	{% for line in tags %}
+	<input type="text" name="tag" label = "recipe tag" required/>
+	<input type="text" name = "recipeID" value="{{recipeID}}" readonly>  recipe ID
+	<br>
+	{% endfor %}
 
-<form action="/post_recipe_details" method="GET">
-	<input type="text" name = "tagText" placeholder="tagText"> tag </br>
-	<input type="text" name = "recipe2" placeholder="relatedRecipe"> related recipe ID </br>
-	<input type="text" name = "pictureURL" placeholder="pictureURL"> picture URL </br>
+	<p>Add related recipe IDs: </p>
+	{% for line in related %}
+	<input type="text" name="related" label = "related recipes" required/>
+		<input type="text" name = "recipeID1" value="{{recipeID}}" readonly>  recipe ID
+	<br>
+	{% endfor %}
 
 	<p>Add ingredients: </p>
-	<input type="text" name = "recipeID" value={{recipeID}}> recipe ID </br>
-	<input type="text" name = "iName" placeholder="iName"> ingredient name </br>
-	<input type="text" name = "unitName" placeholder="unitName"> unit name </br>
-	<input type="text" name = "amount" placeholder="amount"> amount </br>
+	<br>
+	{% for line in ing %}
+	 <!-- <input type="text" name="iName" label = "iName" placeholder="iName" required/> -->
+	<!-- <input type="text" name="unitName" label = "unitName" placeholder ="unitName" required/> -->
+		<select name="ingName" id="ingName">
+	{% for line in data %}
+		<option value="{{line.iName}}">{{line.iName}}</option>
+	{% endfor %}
+	</select>
 
-	<p>Add Steps: </p>
-	<input type="number" name = "stepNo" value={{stepNo}} > step number </br>
-	<!-- <input type="text" name = "recipeID" value={{recipeID}} > recipe ID </br> -->
-	<input type="text" name = "sDesc" placeholder="sDesc"/> step description </br>
+	<select name="unitName" id="unitName">
+		{% for line in data1 %}
+		<option value="{{line.unitName}}">{{line.unitName}}</option>
+	{% endfor %}
+	</select>
 
-		<p> Do you want to add more ingredients and/or steps?
-			<input type="radio" name="addMore" value="yes" checked = true >yes
-            <input type="radio" name="addMore" value="no">no
-        <br><br>
+	<input type="text" name="amount" label = "amount" placeholder = "amount" required/>
+		<input type="text" name = "recipeID2" value="{{recipeID}}" readonly>  recipe ID
+	<br>
+	{% endfor %}
 
-	<input type="submit" value = Post />
+	<p>Add steps: </p>
+	{% for line in steps %}
+	<input type="text" name="steps" label = "recipe steps" required/>
+		<input type="text" name = "recipeID3" value="{{recipeID}}" readonly>
+		<input type="text" name = "step" value="{{line}}" readonly>  stepNo
+	<br>
+	{% endfor %}
+	<input type="submit" value = Submit />
+
+	{% if error %}
+	<p class="error"><strong>Error:</strong> {{error}}</p>
+	{% endif %}
+	{% if message %}
+	<p class="message"><strong>Message:</strong> {{message}}</p>
+	{% endif %}
+
 </form>
 <a href="/home">Home</a>
 </body>
