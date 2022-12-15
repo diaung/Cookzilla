@@ -175,10 +175,18 @@ def home():
     query = 'SELECT DISTINCT profile, gName, title, recipeID ' \
             'FROM Person NATURAL JOIN GroupMembership NATURAL JOIN Recipe ' \
             ' WHERE username = %s AND memberName = %s AND postedBy = %s'
-    cursor.execute(query, (user, user, user))
-    data = cursor.fetchall()
+    qProfile = 'SELECT profile FROM Person WHERE userName = %s'
+    qMember = 'SELECT gName from GroupMembership WHERE memberName = %s'
+    qRecipe = 'SELECT recipeID,title from Recipe WHERE postedBy = %s'
+    cursor.execute(qProfile, (user))
+    data1 = cursor.fetchone()
+    cursor.execute(qMember, (user))
+    data2 = cursor.fetchall()
+    cursor.execute(qRecipe, (user))
+    data3 = cursor.fetchall()
     cursor.close()
-    return render_template('home.html', username=user, posts=data)
+    return render_template('home.html', username=user, posts1=data1,
+                           posts2=data2, posts3=data3)
 
 
 #recipes search
@@ -354,7 +362,9 @@ def postRecipeMore():
     if request.method == 'POST':
         tags = request.form.getlist('tag')
         related = request.form.getlist('related')
-        iName = request.form.getlist('ingName')
+        #iName = request.form.getlist('ingName')
+        #unitName = request.form.getlist('unitName')
+        iName = request.form.getlist('iName')
         unitName = request.form.getlist('unitName')
         amount = request.form.getlist('amount')
         steps = request.form.getlist('steps')
@@ -373,7 +383,20 @@ def postRecipeMore():
 
         j = 0
         for i in iName:
-            print(i + " " + unitName[j] + " " + amount[j])
+            isIng = 'SELECT iName FROM Ingredient WHERE iName = %s'
+            cursor.execute(isIng, i)
+            data = cursor.fetchone()
+            if not data:
+                isIng = 'INSERT INTO Ingredient (iName) VALUES(%s)'
+                cursor.execute(isIng, i)
+
+            isAmt = 'SELECT unitName FROM Unit WHERE unitName = %s'
+            cursor.execute(isAmt, unitName[j])
+            data = cursor.fetchone()
+            if not data:
+                isAmt = 'INSERT INTO Unit (unitName) VALUES(%s)'
+                cursor.execute(isAmt, unitName[j])
+
             ins = 'INSERT INTO RecipeIngredient (recipeID, iName, unitName, amount) VALUES(%s,%s,%s,%s)'
             rID = request.form['recipeID2']
             cursor.execute(ins, (rID, i, unitName[j], amount[j]))
@@ -386,6 +409,7 @@ def postRecipeMore():
             cursor.execute(ins, (j, rID, i))
             j = j + 1
 
+        conn.commit()
         cursor.close()
 
         message = "You've successfully posted recipe ID " + str(rID)
@@ -460,52 +484,49 @@ def postReview():
 ''' 
 OPTIONAL CASE 4: join a group
 '''
+def not_member():
+    user = session['username']
+    cursor = conn.cursor()
+    not_in_grp_query = 'SELECT * FROM `Group` WHERE gName NOT IN (SELECT gName from GroupMembership WHERE memberName = %s)'
+    cursor.execute(not_in_grp_query, (user))
+    not_in_grp_query = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    return not_in_grp_query
+
+@app.route('/join_group')
+def joinGroupPage():
+    # function only available if logged in - need to check if user is logged in
+    if session.get('username'):
+        user = session['username']
+    else:
+        return redirect(url_for('login'))
+    return render_template('join_group.html', username=user,
+                           data=not_member(),groups=getGroupMembership(user))
+
 @app.route('/join_group', methods=['GET', 'POST'])
 def joinGroup():
     user = session['username']
 
-    # user is not a member of these existing groups
-    def not_member():
-        cursor = conn.cursor()
-        not_in_grp_query = 'SELECT * FROM `Group` WHERE gName NOT IN (SELECT gName from GroupMembership WHERE memberName = %s)'
-        cursor.execute(not_in_grp_query,(user))
-        not_in_grp_query = cursor.fetchall()
-        conn.commit()
-        cursor.close()
-        return not_in_grp_query
-
     # add user to groups they are not a member of
     if request.method == 'POST':
-        gName = request.form['gName']
-        gCreator = request.form['gCreator']
+        tags = request.form.getlist('grpName')
+        tags = tags[0]
+        start = "('"
+        mid = "', '"
+        gname = tags[tags.find(start)+len(start):tags.rfind(mid)]
+        end = "')"
+        creator = tags[tags.find(mid)+len(mid):tags.rfind(end)]
+
         cursor = conn.cursor()
-
-        # do an error check here (valid gName and gCreator combo)
-        query = 'SELECT gName,gCreator FROM `Group` WHERE (gName = %s AND gCreator = %s)'
-        cursor.execute(query, (gName, gCreator))
-        validGroup = cursor.fetchall()
+        ins = 'INSERT INTO GroupMembership (memberName,gName,gCreator) VALUES(%s, %s, %s)'
+        cursor.execute(ins, (user,gname,creator))
         conn.commit()
+        cursor.close()
 
-        if validGroup:
-            ins = 'INSERT INTO GroupMembership (memberName,gName,gCreator) VALUES(%s, %s, %s)'
-            cursor.execute(ins, (user,gName,gCreator))
-            conn.commit()
-            cursor.close()
-            dataMember = getGroupMembership(user) # Diana's function
-            dataNotMember = not_member()
-            message = "Confirmation of your new group membership! Join another group (if available), return home, or logout"
-            return render_template('join_group.html', username=user, groups=dataMember, notgroups=dataNotMember, message=message)
-
-        else:
-            dataMem = getGroupMembership(user) # user is member of these groups
-            dataNotMem = not_member() # user is not a member of these groups
-            message = "Invalid group name/group creator combination, please try again"
-            return render_template('join_group.html', username=user, groups=dataMem, notgroups=dataNotMem, message=message)
-    else:
-        dataMem = getGroupMembership(user)  # user is member of these groups
-        dataNotMem = not_member()  # user is not a member of these groups
-
-    return render_template('join_group.html', username=user, groups=dataMem, notgroups=dataNotMem)
+        message = "Confirmation of your new group membership! Join another group (if available), return home, or logout"
+        return render_template('join_group.html', username=user,message=message,
+                               groups=getGroupMembership(user), data=not_member())
 
 
 '''OPTIONAL CASE 1:'''
@@ -516,7 +537,7 @@ def getGroupMembership(user):
     query = 'SELECT gName, gCreator FROM groupMembership WHERE memberName = %s'
     cursor.execute(query, (user))
     data = cursor.fetchall()
-    cursor.close
+    cursor.close()
     return data
 
 @app.route('/post_event')
