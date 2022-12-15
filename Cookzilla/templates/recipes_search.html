@@ -6,11 +6,13 @@
 </head>
 <body>
     <form name="searchQueries" action="/display_recipe_options" method="GET">
-        <p>What type of recipe are you looking for?: </p>
+        <p>Please note, all fields below are required. </br></br>
+            What type of recipe are you looking for?: </p>
         {% for line in tags %}
             <input type="radio" name="tag" value={{line.tagText}}>{{line.tagText}}
 	        <br>
         {% endfor %}
+        <input type="radio" name="tag" value="None" checked>None
 
         <p>Recipe's star rating:
             <input type="radio" name="stars" value="1">1
@@ -18,6 +20,7 @@
             <input type="radio" name="stars" value="3">3
             <input type="radio" name="stars" value="4">4
             <input type="radio" name="stars" value="5">5
+            <input type="radio" name="stars" value="None" checked>None
 
             <br><br>
 
@@ -25,6 +28,7 @@
         <input type="radio" name="searchType" value="both">Both
         <input type="radio" name="searchType" value="stars">Stars Only
         <input type="radio" name="searchType" value="tag">Recipe Type Only
+        <input type="radio" name="searchType" value="None" checked>None
         <br><br><br>
         <input type="reset" value="reset">
         <input type="submit" value="submit">

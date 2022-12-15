@@ -36,8 +36,8 @@ app = Flask(__name__)
 
 # Configure MySQL
 conn = pymysql.connect(host='localhost',
-                       port=8889, #port=3306,
-                       user='jessie', #user='diana',
+                       port=3306, #port=8889,
+                       user='diana', #user='jessie',
                        password='cookzilla6083',
                        db='cookzilla',
                        charset='utf8mb4',
@@ -170,7 +170,11 @@ def registerAuth():
 
 @app.route('/home')
 def home():
-    user = session['username']
+    user = session.get('username')
+    error = None
+    if not user:
+        error = "You are not logged in. Please log in or register."
+        return render_template('index.html', error=error)
     cursor = conn.cursor();
     query = 'SELECT DISTINCT profile, gName, title, recipeID ' \
             'FROM Person NATURAL JOIN GroupMembership NATURAL JOIN Recipe ' \
@@ -204,19 +208,18 @@ def recipesSearch():
 REQUIRED CASE 2: search for recipe and display relevant info
 '''
 # display the recipe options based on user's search term
-@app.route('/display_recipe_options', methods=["GET"])
+@app.route('/display_recipe_options', methods=["GET","POST"])
 def display_recipe_options():
+    searchType = request.args['searchType']
     tag = request.args['tag']
     stars = request.args['stars']
-    searchType = request.args['searchType']
-    print(searchType)
     cursor = conn.cursor();
-    if searchType == 'tag':
+    if searchType == 'tag' or stars == 'None':
         # query recipes with chosen tag value available from database
         query = 'SELECT recipeID, title FROM Recipe NATURAL JOIN RecipeTag WHERE tagText = %s'
         cursor.execute(query, tag)
         data = cursor.fetchall()
-    elif searchType == 'stars':
+    elif searchType == 'stars' or tag == 'None':
         # query recipes with chosen star rating
         query = 'SELECT DISTINCT recipeID, title FROM Recipe NATURAL JOIN Review WHERE stars = %s'
         cursor.execute(query, stars)
@@ -226,11 +229,14 @@ def display_recipe_options():
         query = 'SELECT recipeID, title FROM Recipe NATURAL JOIN RecipeTag NATURAL JOIN Review WHERE tagText = %s AND stars = %s'
         cursor.execute(query,(tag, stars))
         data = cursor.fetchall()
-    cursor.close()
     error = None
     if not data:
+        query = 'SELECT DISTINCT tagText FROM RecipeTag'
+        cursor.execute(query)
+        data = cursor.fetchall()
+        cursor.close()
         error = "There are no recipes matching your search, try again."
-        return render_template('recipes_search.html', error=error)
+        return render_template('recipes_search.html', tags=data, error=error)
     else:
         return render_template('display_recipe_options.html', recipes=data)
 
