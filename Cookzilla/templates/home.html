@@ -15,21 +15,31 @@
 
 Here is your information:
 <br><br>
+<b>Your Profile:</b> {{posts1.profile}}
+<br><br>
 <table>
-	<th>Your Profile</th>
 	<th>Your Groups</th>
-	<th>Recipes Posted</th>
-
-{% for line in posts %}
 	<tr>
-		<td>{{line.profile}}</td>
+		{% for line in posts2 %}
 		<td>{{line.gName}}</td>
-		<td><a href="/show_recipe_details?recipeID={{line.recipeID}}">{{line.title,line.recipeID}}</a></td>
+	</tr>
+	{% endfor %}
+</table>
+
+<br>
+<table>
+	<th>Recipes Posted (ID) </th>
+	<th> Title </th>
+	<tr>
+		{% for line in posts3 %}
+		<td><a href="/show_recipe_details?recipeID={{line.recipeID}}">{{line.recipeID}}</a></td>
 		<td>{{line.title}}</td>
 	</tr>
-{% endfor %}
+	{% endfor %}
 </table>
 <br>
+
+
 Things you can do:
 <br><br>
 <a href="/post_recipe">Post A Recipe</a>

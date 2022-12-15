@@ -22,9 +22,10 @@ Add the details of your recipe for recipeID {{recipeID}}
 	<p>Add ingredients: </p>
 	<br>
 	{% for line in ing %}
-	 <!-- <input type="text" name="iName" label = "iName" placeholder="iName" required/> -->
-	<!-- <input type="text" name="unitName" label = "unitName" placeholder ="unitName" required/> -->
-		<select name="ingName" id="ingName">
+	 <input type="text" name="iName" label = "iName" placeholder="iName" required/>
+	 <input type="text" name="unitName" label = "unitName" placeholder ="unitName" required/>
+	<!--
+	<select name="ingName" id="ingName">
 	{% for line in data %}
 		<option value="{{line.iName}}">{{line.iName}}</option>
 	{% endfor %}
@@ -34,10 +35,10 @@ Add the details of your recipe for recipeID {{recipeID}}
 		{% for line in data1 %}
 		<option value="{{line.unitName}}">{{line.unitName}}</option>
 	{% endfor %}
-	</select>
+	</select> -->
 
 	<input type="text" name="amount" label = "amount" placeholder = "amount" required/>
-		<input type="text" name = "recipeID2" value="{{recipeID}}" readonly>  recipe ID
+	<input type="text" name = "recipeID2" value="{{recipeID}}" readonly>  recipe ID
 	<br>
 	{% endfor %}
 
