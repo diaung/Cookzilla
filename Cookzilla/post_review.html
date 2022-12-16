@@ -1,0 +1,46 @@
+<html>
+
+<head>
+</head>
+
+<body>
+	You are logged in as {{username}}.
+	<h1>Post a Review!</h1>
+
+</body>
+<p>
+	Please use the form below to post your review. <br>
+	You may include some pictures for your review, if desired. The allowed file extensions for the picture are: png, jpeg, and gif
+	<br>
+</p>
+
+<form method="POST" action="/post_review" enctype=multipart/form-data>
+	Recipe ID:</br>  <input type="text" name="recipeID" placeholder="recipe ID" required /></br>
+	</br>
+	Review Title:</br><input type="text" name="revTitle" placeholder="review title" /> </br>
+	</br>
+	Description:</br> <input type="text" name="revDesc" placeholder="description" required /></br>
+	</br>
+	Stars (Rating, between 0 and 5):</br><input type="number" name="stars" placeholder="star rating" min = 0 max = 5 required /> </br>
+	</br>
+	Add review pictures, if desired (allowed file types are png, jpg, jpeg, gif)
+	<br>
+	<input type="file" name="pictures[]" autocomplete="off" multiple=""> </br>
+
+	<br>
+	<input type="submit" value=Submit /> </br>
+</form>
+
+{% if error %}
+	<p class="error"><strong>Error:</strong> {{error}}</p>
+{% endif %}
+{% if message %}
+	<p class="message"><strong>Message:</strong> {{message}}</p>
+{% endif %}
+
+</br>
+
+<a href="/home">Home</a></br>
+<a href="/logout">Logout</a></br>
+
+</html>
