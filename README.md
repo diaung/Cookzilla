@@ -21,4 +21,4 @@ Additional features:
 - RSVP to an event that the user belongs to
 - post a review
 - join a group that the user does not belong to
-  - Note an assumption is that creators of groups are not automatically included as members of the group(s) they created
+  - Note an assumption is that creators of groups are not automatically included as members of the group(s) unless they choose to specifically join the group. The idea here is that the creators of the group, could have created it to help another member out, but may not explicitly wish to be a part of the group.
