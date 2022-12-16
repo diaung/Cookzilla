@@ -21,9 +21,13 @@
 	</br>
 	Description:</br> <input type="text" name="revDesc" placeholder="description" required /></br>
 	</br>
-	Stars (Rating):</br><input type="number" name="stars" placeholder="star rating" required /> </br>
+	Stars (Rating, between 0 and 5):</br><input type="number" name="stars" placeholder="star rating" min = 0 max = 5 required /> </br>
 	</br>
+	Add review pictures, if desired (allowed file types are png, jpg, jpeg, gif)
+	<br>
 	<input type="file" name="pictures[]" autocomplete="off" multiple=""> </br>
+
+	<br>
 	<input type="submit" value=Submit /> </br>
 </form>
 

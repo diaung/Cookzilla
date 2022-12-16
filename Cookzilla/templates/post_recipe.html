@@ -12,8 +12,11 @@ Start posting your recipe!
 	<input type="number" name = "ingredients" placeholder="num ingredients" min = 1> How many ingredients? </br>
 	<input type="number" name = "steps" placeholder="num steps" min = 1> How many steps? </br>
 
-	<br><br>
+	<br>
+	Add recipe pictures, if desired (allowed file types are png, jpg, jpeg, gif)
+	<br>
 	<input type="file" name="pictures[]" autocomplete="off" multiple=""> </br>
+	<br>
 	<input type="submit" value = Post />
 
 	{% if error %}
@@ -24,6 +27,7 @@ Start posting your recipe!
 	<p class="message"><strong>Message:</strong> {{message}}</p>
 	{% endif %}
 </form>
-<a href="/home">Home</a>
+<a href="/home">Home</a></br>
+<a href="/logout">Logout</a></br>
 </body>
 </html>
