@@ -2,7 +2,7 @@ import os
 import hashlib
 import base64
 
-from flask import Flask, render_template, request, session, url_for, redirect, flash
+from flask import Flask, render_template, request, session, url_for, redirect, flash, escape
 from werkzeug.utils import secure_filename
 import pymysql.cursors
 
@@ -36,8 +36,8 @@ app = Flask(__name__)
 
 # Configure MySQL
 conn = pymysql.connect(host='localhost',
-                       port=8889, #port=3306,
-                       user='jessie', #user='diana',
+                       port=3306, #port=889,
+                       user='diana', #user='jessie',
                        password='cookzilla6083',
                        db='cookzilla',
                        charset='utf8mb4',
@@ -556,6 +556,7 @@ def postEventPage():
     else:
         return redirect(url_for('login'))
     groups = getGroupMembership(user)
+    #return escape(groups)
     return render_template('post_event.html', username=user, groups=groups)
 
 @app.route('/post_event', methods=['GET', 'POST'])
@@ -568,9 +569,9 @@ def postEvent():
         eDesc = request.form['eDesc']
         if eDesc == "":
             eDesc = None
-        eDate = request.form['eDate']
-        gName = request.form['gName']
-        gCreator = request.form['gCreator']
+        eDate = request.form['eventDate']
+        gName = request.form.get("select_gname")
+        gCreator = request.form.get('select_gcreator')
         eventPicture = request.files.getlist('pictures')
 
         # check if the user is member of group for event
@@ -606,7 +607,7 @@ def postEvent():
             conn.commit()
             cursor.close()
             message = "Confirmation of your event addition! Here is your eventID number: " + str(eID)
-            return render_template('post_event.html', username=user, groups=data, message=message)
+            return render_template('post_event.html', username=user, groups=grp_query, message=message)
 
         #if not in group
         else:
@@ -630,11 +631,6 @@ def show_eventsPage():
         return redirect(url_for('login'))
     groups = getGroupMembership(user)
     return render_template('show_events.html', username=user, groups=groups)
-
-@app.route('/post/<int:post_id>')
-def show_post(post_id):
-    # show the post with the given id, the id is an integer
-    return f'Post {post_id}'
 
 @app.route('/all_events', methods=['GET'])
 def show_all_events():

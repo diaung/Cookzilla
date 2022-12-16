@@ -6,6 +6,10 @@
 <body>
 	<h1>{{username}} Post an Event!</h1>
 
+	{% if message %}
+	<p class="message"><strong>Message:</strong> {{message}}</p>
+	{% endif %}
+
 	You can post an event only for the groups you are a member of.
 	<br>
 	Here are the groups you are a member of:
@@ -44,11 +48,21 @@
 	</br>
 	Event Description:</br><input type="text" name="eDesc" placeholder="Event Description" /> </br>
 	</br>
-	Date/Time:</br> <input type="datetime" name="eDate" placeholder="Event Date/Time" required /> format required: (YYYY-MM-DD HH:mm:ss)</br>
+	Date/Time:</br> <input type="datetime-local" name="eventDate"  required /></br>
 	</br>
-	Group Name:</br><input type="text" name="gName" placeholder="Group Name" required /> </br>
+	Group Name:</br>
+	 <select name="select_gname" class="form-group" required>
+		 {% for line in groups %}
+            <option value="{{line.gName}}" >{{line.gName}}</option>
+		 {% endfor %}
+        </select></br>
 	</br>
-	Group Creator: </br><input type="text" name="gCreator" placeholder="Group Creator" required /> </br>
+	Group Creator: </br>
+	 <select name="select_gcreator" class="form-group" required>
+		 {% for line in groups %}
+            <option value="{{line.gCreator}}">{{line.gCreator}}</option>
+		 {% endfor %}
+        </select> </br>
 	</br>
 	<input type="file" name="pictures[]" autocomplete="off" multiple=""> </br>
 	<input type="submit" value=Submit /> </br>
@@ -57,12 +71,11 @@
 {% if error %}
 	<p class="error"><strong>Error:</strong> {{error}}</p>
 {% endif %}
-{% if message %}
-	<p class="message"><strong>Message:</strong> {{message}}</p>
-{% endif %}
+
 
 </br>
 
+<a href="/post_event">Post Another Group Event</a></br>
 <a href="/home">Home</a></br>
 <a href="/logout">Logout</a></br>
 
