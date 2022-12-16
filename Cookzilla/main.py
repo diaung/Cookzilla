@@ -297,9 +297,17 @@ def postRecipe():
     if request.method == 'POST':
         # get information
         tags = request.form['tags']
+        if tags == "":
+            tags = 0
         related = request.form['related']
+        if related == "":
+            related = 0
         ing = request.form['ingredients']
+        if ing == "":
+            ing = 1
         steps = request.form['steps']
+        if steps == "":
+            steps = 1
 
         title = request.form['title']
         numServings = request.form['numServings']
