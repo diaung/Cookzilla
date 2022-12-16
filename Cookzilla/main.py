@@ -36,8 +36,8 @@ app = Flask(__name__)
 
 # Configure MySQL
 conn = pymysql.connect(host='localhost',
-                       port=3306, #port=8889,
-                       user='diana', #user='jessie',
+                       port=8889, #port=3306,
+                       user='jessie', #user='diana',
                        password='cookzilla6083',
                        db='cookzilla',
                        charset='utf8mb4',
@@ -686,8 +686,12 @@ def show_events(event_id):
 
 @app.route('/logout')
 def logout():
-    session.pop('username')
-    return redirect('/')
+    user = session.get('username')
+    if not user:
+        return redirect('/')
+    else:
+        session.pop('username')
+        return redirect('/')
 
 
 app.secret_key = 'some key that you will never guess'
