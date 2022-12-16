@@ -1,5 +1,7 @@
 # Cookzilla Project
 
+Cookzilla focuses on cooking and recipes. The site allows people to do things like post cooking recipes, to review and rate posted cooking recipes and to organize cooking meetings with other users (more details are given below).
+
 main.py has all the app code, and imports app.py (which has the upload folder location)
 
 templates folder has the html files
