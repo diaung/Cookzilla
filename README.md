@@ -19,6 +19,7 @@ steps in order, etc (recipeID is selected from a menu based on a search)
 Additional features:
 - post an event for a group that user belongs to
 - RSVP to an event that the user belongs to
+  - Note that ALL available events will be displayed - if a user try to RSVP to an event for a group for which they are not a member, they will be taken to a page to ask them to register for the group.  Otherwise, they will be able to RSVP yes or no to an event.
 - post a review
 - join a group that the user does not belong to
   - Note an assumption is that creators of groups are not automatically included as members of the group(s) unless they choose to specifically join the group. The idea here is that the creators of the group, could have created it to help another member out, but may not explicitly wish to be a part of the group.
