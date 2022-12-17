@@ -36,10 +36,10 @@ app = Flask(__name__)
 
 # Configure MySQL
 conn = pymysql.connect(host='localhost',
-                       port=3306, #port=889,
-                       user='diana', #user='jessie',
+                       port=8889, #port=3306,
+                       user='jessie', #user='diana',
                        password='cookzilla6083',
-                       db='cookzilla',
+                       db='cookzillatest', #'cookzilla',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
@@ -271,10 +271,16 @@ def show_recipe_details():
     query6 = 'SELECT pictureURL FROM RecipePicture WHERE recipeID = %s'
     cursor.execute(query6, poster)
     data6 = cursor.fetchall()
+   # cursor.close()
+
+    query7 = 'SELECT * FROM Restrictions R WHERE R.iName IN (SELECT RI.iName FROM RecipeIngredient RI WHERE recipeID = %s)'
+    cursor.execute(query7, poster)
+    data7 = cursor.fetchall()
     cursor.close()
 
     return render_template('display_recipe_details.html', recipeID=poster, posts1=data1,
-                           posts2=data2, posts3=data3, posts4=data4, posts5=data5, posts6=data6)
+                           posts2=data2, posts3=data3, posts4=data4, posts5=data5, posts6=data6,
+                           posts7=data7)
 
 ''' 
 REQUIRED CASE 4: post a recipe
