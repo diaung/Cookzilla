@@ -3,12 +3,14 @@
 </head>
 <body>
 <form action="/registerAuth" method="POST">
-	<input type="text" name = "username" placeholder="username" required/> required</br>
-	<input type="password" name = "password" placeholder="password" required/> required</br>
-	<input type="text" name="lname" placeholder="lastname"/> </br>
-	<input type="text" name="fname" placeholder="firstname" /> </br>
-	<input type="email" name="email" placeholder="email" /> </br>
-	<input type="profile" name="profile" placeholder="add profile info"/></br>
+	All fields have a max of 50 characters, except profile (which has a max of 250)
+	<br><br>
+	<input type="text" name = "username" placeholder="username" maxlength=50 required/> required</br>
+	<input type="password" name = "password" placeholder="password" maxlength=50 required/> required</br>
+	<input type="text" name="lname" placeholder="lastname" maxlength=50/> </br>
+	<input type="text" name="fname" placeholder="firstname" maxlength=50/> </br>
+	<input type="email" name="email" placeholder="email" maxlength=50/> </br>
+	<input type="profile" name="profile" placeholder="add profile info" maxlength=250/></br>
 	<input type="submit" value = Register />
 
 	{% if error %}
