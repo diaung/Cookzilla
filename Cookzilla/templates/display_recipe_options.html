@@ -7,7 +7,7 @@
 <br><br>
 <form action="/show_recipe_details" method="GET">
 	{% for line in recipes %}
-	<input type="radio" name="recipeID" value={{line.recipeID}}>{{line.recipeID, line.title}}</input>
+	<input type="radio" name="recipeID" value={{line.recipeID}} checked>{{line.recipeID, line.title}}</input>
 	<br>
 	{% endfor %}
 	<br>
