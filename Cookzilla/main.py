@@ -395,12 +395,19 @@ def postRecipeMore():
             ins = 'INSERT INTO RecipeTag (recipeID, tagText) VALUES(%s,%s)'
             rID = request.form['recipeID']
             cursor.execute(ins, (rID, i))
-        for i in related:
-            ins = 'INSERT INTO RelatedRecipe (recipe1, recipe2) VALUES(%s,%s)'
-            rID = request.form['recipeID1']
-            cursor.execute(ins, (rID, i))
-            cursor.execute(ins, (i, rID))
 
+        error = ''
+        query = 'SELECT * FROM Recipe WHERE recipeID = %s'
+        cursor.execute(query, (related))
+        validRID = cursor.fetchall()
+        if not validRID:
+            error = 'Your related recipeID was invalid so it was not added'
+        else:
+            for i in related:
+                ins = 'INSERT INTO RelatedRecipe (recipe1, recipe2) VALUES(%s,%s)'
+                rID = request.form['recipeID1']
+                cursor.execute(ins, (rID, i))
+                cursor.execute(ins, (i, rID))
         j = 0
         for i in iName:
             isIng = 'SELECT iName FROM Ingredient WHERE iName = %s'
