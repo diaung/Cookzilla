@@ -87,6 +87,19 @@ Here are any related recipes:
 </table>
 <br><br>
 
+Here are the allergy warnings:
+<table>
+	<th>Ingredient</th>
+	<th>Allergy Warning</th>
+	{% for line in posts7 %}
+	<tr>
+		<td>{{line.iName}} </td>
+		<td>{{line.restrictionDesc}} </td>
+	</tr>
+	{% endfor %}
+</table>
+<br><br>
+
 Here are the recipe pictures:
 <br>
 {% for line in posts6 %}
